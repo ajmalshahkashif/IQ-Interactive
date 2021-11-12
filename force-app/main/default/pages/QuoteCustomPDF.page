@@ -1,0 +1,228 @@
+<apex:page standardController="Quote" extensions="QuoteCustomPDFController" renderAs="pdf" showHeader="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false" >
+    <html>
+        <head>
+            <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+            <style>
+                body{
+                font-family: sans-serif;
+                font-size: xx-small;
+                }
+                
+                .subType{
+                font-weight: bold;
+                }
+                
+                .family{
+                font-weight: bold;
+                }
+                
+                .categoryLevelTotal{
+                text-align: right;
+                font-weight: bold;
+                }
+                
+                table {
+                border-collapse: collapse;
+                }
+                
+                .quoteTable td{
+                padding: 5px;
+                border-bottom: 1px solid #f2f2f2;
+                vertical-align:top;
+                }
+                
+                td.header{
+                padding: 8px;
+                color: #767777;
+                border-bottom: 1px solid #d5d4d4;
+                border-top: 1px solid #d5d4d4;
+                background-color: #ececec;
+                }
+                
+                @page {
+                	margin-bottom:80px;
+                
+                    @top-center {
+                    content: element(header);
+                    }
+                    @bottom-center {
+                    content: element(footer);
+                    }
+                }
+                div.header {
+                position: running(header);
+                }
+                div.footer {
+                position: running(footer);
+                }
+            </style>
+            
+        </head>
+        <body>
+            <div class="footer" Id="footer">
+                <div style="
+                padding: 20px;
+                border: 1px solid #d5d4d4;">
+                    IQ Interactive Inc. has created this quote for the express use of the business it has been provided to. 
+                    IQ Interactive Inc. does not authorize reproduction or forwarding of this information to 
+                    any party outside the intended recipient. 
+                </div>
+                <br /><br /><br />
+            </div>
+            
+            <table width="100%">
+                <tr>
+                	<td >
+                        <span style="font-size: large;">INVESTMENT SUMMARY</span><br /><br />
+                        Quote Number: {!Quote.Quotenumber}<br /><br />
+                        Payment Terms:<br />
+                        Expiration Date: 
+                        <apex:outputText value="{0, date, MM/dd/yyyy}">
+                            <apex:param value="{!Quote.ExpirationDate}" /> 
+                        </apex:outputText>
+                    </td>
+                    <td>
+                    	<apex:image url="{!$Resource.Truffle_Logo}" height="100" />
+                    </td>
+                    <td>
+                    	<apex:image url="{!$Resource.IQ_Interactive_Logo}" height="100" />
+                    </td>
+                </tr>
+            </table>
+            <br /><br /><br /><br />
+            <apex:variable value="{!1}" var="rowNum"/> 
+            <table width="100%" >
+                <tr>
+                    <td style="padding-left: 20px">
+                        <b>Prepared For:</b><br /><br />
+                        <b>{!quote.Contact.Name}</b><br />
+                        <b>{!quote.Account.Name}</b><br />
+                        {!quote.Contact.MailingStreet}<br />
+                        {!quote.Contact.MailingCity} {!quote.Contact.MailingPostalCode} {!quote.Contact.MailingState}<br />
+                        {!quote.Contact.MailingCountry}<br />
+                        {!quote.Contact.Phone}<br />
+                        {!quote.Contact.Email}<br />
+                    </td>
+                    <td style="padding-left: 20px">
+                        <b>Prepared By:</b><br /><br />
+                        <b>{!Quote.Opportunity.Owner.FirstName} {!Quote.Opportunity.Owner.LastName}</b><br />
+                        <b>IQ Interactive</b><br />
+                        {!$Organization.Street}<br />
+                        {!$Organization.City} {!$Organization.PostalCode} {!$Organization.State}<br />
+                        {!$Organization.Country}<br />
+                        {!$Organization.Phone}<br />
+                        {!Quote.Opportunity.Owner.Email}<br />
+                    </td>
+                </tr>
+            </table>
+            <br />
+            <br />
+            
+            
+            <table width="100%" border="0" class="quoteTable">
+                <tr class="header">
+                    <td class="header">Item#</td>
+                    <td class="header" width="50px">Image</td>
+                    <td class="header" width="30px">Quantity</td>
+                    <td class="header">Item</td>
+                    <td class="header">Unit Price</td>
+                    <!--<td class="header">Adjusted Unit Price</td>-->
+                    <td class="header">Extended Price</td>
+                </tr>
+                <apex:variable value="{!0}" var="categoryLevelTotal"/>
+                <apex:variable value="{!0}" var="subTotal"/>
+                <apex:variable value="{!0}" var="taxTotal"/>
+                <apex:repeat value="{!items}" var="i" >
+                    <apex:variable value="{!0}" var="categoryLevelTotal"/>
+                    <tr >
+                        <td colspan="{!colSpan}" class="subType" >{!i.subPeriod} Items</td>
+                    </tr>
+                    <apex:repeat value="{!i.familyItems}" var="fam" >
+                        <tr >
+                            <td></td><td colspan="{!colSpan-1}" class="family" >{!i.familyItems[fam].family}</td>
+                        </tr>
+                        <apex:repeat value="{!i.familyItems[fam].qlis}" var="qli" >
+                            <tr >
+                                <td >{!FLOOR(rowNum)})</td>  
+                                <td width="50px" >
+                                    <apex:image rendered="{!!ISBLANK(qli.Product2.Image_URL__c)}" url="{!qli.Product2.Image_URL__c}" width="50" />
+                                </td>  
+                                <td style="text-align: right" width="30px">
+                                    <apex:outputText value="{0, number, ###,###,##0}">
+                                        <apex:param value="{!qli.Quantity}" />
+                                    </apex:outputText>
+                                </td>
+                                <td style="max-width: 200px">
+                                    {!qli.Product2.Name}<br /><br />
+                                    {!qli.Product2.Description}
+                                </td>
+                                <td style="text-align: right">
+                                    <apex:outputText value="${0, number, ###,###,##0.00}">
+                                        <apex:param value="{!qli.UnitPrice}" />
+                                    </apex:outputText>
+                                </td>
+                                <td style="text-align: right">
+                                    <apex:outputText value="${0, number, ###,###,##0.00}">
+                                        <apex:param value="{!qli.TotalPrice}" />
+                                    </apex:outputText>
+                                </td>
+                                <!--<td>
+                                    <apex:outputText value="${0, number, ###,###,##0.00}">
+                                        <apex:param value="{!0}" />
+                                    </apex:outputText>
+                                </td>-->
+                            </tr>
+                            <apex:variable value="{!rowNum+1}" var="rowNum"/> 
+                            <apex:variable value="{!categoryLevelTotal+qli.TotalPrice}" var="categoryLevelTotal"/>
+                            <apex:variable value="{!subTotal+qli.TotalPrice}" var="subTotal"/>
+                        </apex:repeat>
+                        
+                    </apex:repeat>
+                    
+                    <tr >
+                        <td colspan="{!colSpan-1}" class="categoryLevelTotal">{!i.subPeriod} Total:&nbsp; </td>
+                        <td style="text-align: right">
+                            <apex:outputText value="${0, number, ###,###,##0.00}">
+                                <apex:param value="{!categoryLevelTotal}" />
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                </apex:repeat>
+                <tr >
+                    <td colspan="{!colSpan}">&nbsp;</td>
+                </tr>
+                <tr >
+                    <td colspan="{!colSpan-1}" class="categoryLevelTotal">Subtotal:&nbsp; </td>
+                    <td style="text-align: right">
+                        <apex:outputText value="${0, number, ###,###,##0.00}">
+                            <apex:param value="{!subTotal}" />
+                        </apex:outputText>
+                    </td>
+                </tr>
+                <tr >
+                    <td colspan="{!colSpan-1}" class="categoryLevelTotal">Total Taxes ({!Quote.Tax_Percentage__c} %):&nbsp; </td>
+                    <td style="text-align: right">
+                        <apex:outputText value="${0, number, ###,###,##0.00}">
+                            <apex:param value="{!subTotal*Quote.Tax_Percentage__c/100}" />
+                        </apex:outputText>
+                    </td>
+                </tr>
+                <tr >
+                    <td colspan="{!colSpan-1}" class="categoryLevelTotal">Total:&nbsp; </td>
+                    <td style="text-align: right">
+                        <apex:outputText value="${0, number, ###,###,##0.00}">
+                            <apex:param value="{!subTotal*(1+Quote.Tax_Percentage__c/100)}" />
+                        </apex:outputText>
+                    </td>
+                </tr>
+            </table>
+            <br /><br /><br />
+            <div align="right">
+                Authorizing Signature ______________________________________<br /><br /><br />
+				Date ______________________________________
+
+            </div>
+            
+        </body>
+    </html>
+</apex:page>

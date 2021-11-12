@@ -1,0 +1,7 @@
+<apex:page controller="TotalRevenueExtension" >
+    
+    <h1>
+        ${!totalRevenue}
+    </h1>
+    
+</apex:page>
